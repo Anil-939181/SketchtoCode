@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sketch2Code - Gemini Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+</head>
+
+<body>
+    <header class="app-header">
+        <h1>✨ Sketch2Code <span>Gemini Edition</span></h1>
+        <p>Turn hand-drawn UI sketches into ready-to-use code in seconds.</p>
+    </header>
+
+    <main class="app-container">
+        <!-- Input Section -->
+        <section class="input-section">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="upload-tab">Upload Image</button>
+                <button class="tab-btn" data-tab="draw-tab">Draw Canvas</button>
+            </div>
+
+            <div id="upload-tab" class="tab-content active">
+                <div class="drop-zone" id="drop-zone">
+                    <span class="drop-zone__prompt">Drop sketch here or click to upload</span>
+                    <input type="file" name="file" id="file-input" class="drop-zone__input" accept="image/*">
+                </div>
+                <img id="image-preview" class="hidden" alt="Image Preview">
+                <button id="clear-upload-btn" class="secondary-btn hidden" style="margin-top: 1rem;">Clear
+                    Image</button>
+            </div>
+
+            <div id="draw-tab" class="tab-content">
+                <div class="canvas-toolbar">
+                    <button id="draw-mode-btn" class="tool-btn active">✏️ Draw</button>
+                    <button id="select-mode-btn" class="tool-btn">🖱️ Select</button>
+                    <button id="add-text-btn" class="tool-btn">📝 Text</button>
+                    <button id="add-rect-btn" class="tool-btn">⬜ Rect</button>
+                    <button id="add-circle-btn" class="tool-btn">⭕ Circle</button>
+                    <button id="add-button-btn" class="tool-btn" title="Add UI Button Shape">🔘 Button</button>
+                    <div style="flex-grow: 1;"></div>
+                    <button id="undo-btn" class="tool-btn" title="Undo">↩️</button>
+                    <button id="redo-btn" class="tool-btn" title="Redo">↪️</button>
+                    <input type="color" id="drawing-color" value="#000000" title="Choose Color">
+                    <input type="range" id="drawing-width" min="1" max="50" value="3" title="Brush Size">
+                </div>
+                <!-- Wrapper to manage canvas size properly -->
+                <div id="canvas-container">
+                    <div id="canvas-wrapper">
+                        <canvas id="drawing-canvas"></canvas>
+                    </div>
+                    <div id="canvas-width-resizer" class="canvas-resizer vertical"><div class="resizer-handle"></div></div>
+                    <div id="canvas-height-resizer" class="canvas-resizer horizontal"><div class="resizer-handle"></div></div>
+                </div>
+                <div class="canvas-controls">
+                    <button id="delete-item-btn" class="secondary-btn danger-text">Delete Selected</button>
+                    <button id="clear-canvas-btn" class="secondary-btn">Clear Canvas</button>
+                </div>
+            </div>
+
+            <div class="options-section">
+                <label for="framework-select" style="font-weight: 600;">Select Target Framework:</label>
+                <select id="framework-select">
+                    <option value="React with Tailwind CSS">React + Tailwind</option>
+                    <option value="HTML with Tailwind CSS" selected>HTML + Tailwind</option>
+                    <option value="Angular">Angular</option>
+                    <option value="Vue.js">Vue.js</option>
+                    <option value="Streamlit">Streamlit</option>
+                    <option value="Plain HTML, vanilla CSS layout and basic JS">Plain HTML/CSS</option>
+                </select>
+                <button id="generate-btn" class="primary-btn">Generate Code 🚀</button>
+            </div>
+
+            <div id="loading" class="hidden">
+                <div class="steps-progress">
+                    <div class="step" id="step-preprocessing">
+                        <div class="step-icon">⏳</div>
+                        <div class="step-content">
+                            <div class="step-title">Preprocessing Image</div>
+                            <div class="step-status">Preparing image data...</div>
+                        </div>
+                    </div>
+                    <div class="step" id="step-detection">
+                        <div class="step-icon">🔍</div>
+                        <div class="step-content">
+                            <div class="step-title">Text Detection</div>
+                            <div class="step-status">Detecting text elements...</div>
+                        </div>
+                    </div>
+                    <div class="step" id="step-analysis">
+                        <div class="step-icon">📊</div>
+                        <div class="step-content">
+                            <div class="step-title">Element Analysis</div>
+                            <div class="step-status">Analyzing detected elements...</div>
+                        </div>
+                    </div>
+                    <div class="step" id="step-generation">
+                        <div class="step-icon">⚙️</div>
+                        <div class="step-content">
+                            <div class="step-title">Code Generation</div>
+                            <div class="step-status">Generating code with Gemini...</div>
+                        </div>
+                    </div>
+                    <div class="step" id="step-complete">
+                        <div class="step-icon">✅</div>
+                        <div class="step-content">
+                            <div class="step-title">Complete</div>
+                            <div class="step-status">Code generated successfully!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resizer -->
+        <div class="resizer" id="drag-me">
+            <div class="resizer-handle"></div>
+        </div>
+
+        <!-- Output Section -->
+        <section class="output-section">
+            <div class="tabs output-tabs">
+                <button class="out-tab-btn active" data-tab="code-view-tab">Generated Code</button>
+                <button class="out-tab-btn" data-tab="preview-view-tab">Live Preview</button>
+            </div>
+
+            <div id="code-view-tab" class="out-tab-content active" style="flex:1;">
+                <textarea id="code-output" readonly placeholder="Your generated code will appear here..."></textarea>
+                <button id="copy-btn" class="secondary-btn" style="margin-top: 1rem;">Copy Code</button>
+            </div>
+
+            <div id="preview-view-tab" class="out-tab-content" style="flex:1;">
+                <iframe id="live-preview" sandbox="allow-scripts"></iframe>
+            </div>
+        </section>
+    </main>
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

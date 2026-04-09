@@ -145,6 +145,7 @@ ehthumbs.db
 Thumbs.db
 
 # Project specific
+dataset
 test_sketches/
 test_sketches_preprocessed/
 Sketch2Code_Predictions/
